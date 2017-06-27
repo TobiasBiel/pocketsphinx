@@ -134,11 +134,11 @@ class recognizer(object):
 
     def final_result(self, hyp, confidence):
         """ Insert the final result. """
+        rospy.loginfo("Recognized [ " + hyp + " ] with confidence [ " + str(confidence) + " ]")
         msg = String()
         msg.data = str(hyp.lower())
         conf = Float32()
         conf.data = float(confidence)
-        rospy.loginfo("Final: " + msg.data + ", with confidence: " + str(confidence))
         self.pub.publish(msg)
         self.conf_pub.publish(conf)
 
