@@ -43,11 +43,14 @@ class recognizer(object):
         # Start node
         rospy.init_node("recognizer")
 
-        self._lm_param = "~lm"
-        self._dic_param = "~dict"
+        self._fsg_param = "~fsg"
 
         self.launch_config = 'autoaudiosrc ! audioconvert ! audioresample ' \
                              + '! pocketsphinx name=asr ! fakesink'
+
+        self.pipeline = None
+        self.asr = None
+        self.bus_id = 0
 
         # Configure ROS settings
         self.started = False
@@ -57,10 +60,10 @@ class recognizer(object):
         rospy.Service("~start", Empty, self.start)
         rospy.Service("~stop", Empty, self.stop)
 
-        if rospy.has_param(self._lm_param) and rospy.has_param(self._dic_param):
+        if rospy.has_param(self._fsg_param):
             self.start_recognizer()
         else:
-            rospy.logwarn("lm and dic parameters need to be set to start recognizer.")
+            rospy.logwarn("lm or fsg parameter need to be set to start recognizer.")
 
     def start_recognizer(self):
         rospy.loginfo("Starting recognizer... ")
@@ -68,21 +71,14 @@ class recognizer(object):
         self.pipeline = gst.parse_launch(self.launch_config)
         self.asr = self.pipeline.get_by_name('asr')
 
-        # Configure language model
-        if rospy.has_param(self._lm_param):
-            lm = rospy.get_param(self._lm_param)
+        if rospy.has_param(self._fsg_param):
+            fsg = rospy.get_param(self._fsg_param)
         else:
-            rospy.logerr('Recognizer not started. Please specify a language model file.')
+            rospy.logerr('Recognizer not started. Please specify a grammar.')
             return
 
-        if rospy.has_param(self._dic_param):
-            dic = rospy.get_param(self._dic_param)
-        else:
-            rospy.logerr('Recognizer not started. Please specify a dictionary.')
-            return
-
-        self.asr.set_property('lm', lm)
-        self.asr.set_property('dict', dic)
+        self.asr.set_property('fsg', fsg)
+        self.asr.set_property('configured', True)
 
         bus = self.pipeline.get_bus()
         bus.add_signal_watch()
@@ -100,7 +96,7 @@ class recognizer(object):
 
     def shutdown(self):
         """ Delete any remaining parameters so they don't affect next launch """
-        for param in [self._lm_param, self._dic_param]:
+        for param in [self._fsg_param]:
             if rospy.has_param(param):
                 rospy.delete_param(param)
 
