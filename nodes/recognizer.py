@@ -63,7 +63,7 @@ class recognizer(object):
         if rospy.has_param(self._fsg_param):
             self.start_recognizer()
         else:
-            rospy.logwarn("lm or fsg parameter need to be set to start recognizer.")
+            rospy.logwarn("fsg parameter needed to start the recognizer.")
 
     def start_recognizer(self):
         rospy.loginfo("Starting recognizer... ")
