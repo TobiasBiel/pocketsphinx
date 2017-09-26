@@ -55,7 +55,7 @@ class recognizer(object):
         # Configure ROS settings
         self.started = False
         rospy.on_shutdown(self.shutdown)
-        self.pub = rospy.Publisher('~output', String, queue_size=10)
+        self.pub = rospy.Publisher('/speech_recognition', String, queue_size=10)
         self.conf_pub = rospy.Publisher('~confidence', Float32, queue_size=10)
         rospy.Service("~start", Empty, self.start)
         rospy.Service("~stop", Empty, self.stop)
